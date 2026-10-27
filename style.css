@@ -82,3 +82,20 @@ body{font-family:Trebuchet MS,Segoe UI,Malgun Gothic,sans-serif;background:#0b14
 .panel {background:linear-gradient(145deg, #354669,#161f38 80%);border-color:#b9c8ef;}
 .panel h1 {color:#e0e6fc}
 #options .hero-card.active {border-color:#adc5f7}
+
+
+/* Skyguard Remastered: consolidated premium interface accents */
+:root{--sg-gold:#ead29d;--sg-navy:#111b30;--sg-edge:#819ab8}
+#hud{top:max(10px,env(safe-area-inset-top));left:clamp(8px,2vw,24px);right:clamp(8px,2vw,24px);gap:8px;align-items:flex-start;font-size:clamp(11px,1.25vw,15px);font-weight:750}
+#hud span{background:linear-gradient(145deg,#0a1525ed,#243a56e8)!important;color:#f0f4fb;border:1px solid #a6b7c56b!important;box-shadow:inset 0 1px #ffffff1a,0 5px 15px #07112288!important;padding:10px 13px;border-radius:10px!important;backdrop-filter:blur(10px)}
+#hud #stageName{border-color:#ecd59a99!important;color:#ffe7b7}
+#pause{padding:10px 15px;background:linear-gradient(145deg,#253c5c,#0f2036)!important;color:#ffe3b1!important;border:1px solid #d6bb86a0!important;border-radius:10px!important;box-shadow:0 5px 15px #02081666;font-size:15px}
+.panel{background:linear-gradient(155deg,#30445eee,#151f33f9 64%,#111a2dfb)!important;border:1px solid #bdc9d989!important;border-top:2px solid #e7d29c!important;box-shadow:0 24px 80px #020817c9,inset 0 1px #ffffff20!important}
+.panel h1{color:#f6e9cc!important;letter-spacing:.025em;text-shadow:0 3px 12px #03081dcc!important}
+#options .hero-card{background:linear-gradient(150deg,#2b3c56,#131f33)!important;border:1px solid #8299b3!important;border-radius:10px!important;box-shadow:0 5px 18px #02081866,inset 0 1px #ffffff12!important}
+#options .hero-card.active{border:2px solid #efd5a1!important;box-shadow:0 0 0 2px #efd5a129,0 8px 24px #020817b3!important}
+.panel button{border-radius:9px!important}
+#joystick-ring{background:radial-gradient(circle at 40% 35%,#90bbd84a,#10243bbd)!important;border:2px solid #d8e5f29e!important}
+#joystick-knob{background:radial-gradient(circle at 33% 23%,#e6f2ff,#5d89b6 75%)!important;box-shadow:0 4px 12px #04152e9c,inset 0 1px #fff8!important}
+.pad [data-key=jump]{background:radial-gradient(circle at 33% 25%,#f4deb0,#b58d52 80%)!important;color:#243451!important;box-shadow:0 5px 18px #01091499,inset 0 2px #fff8!important}
+@media(max-width:650px){#hud{gap:3px;font-size:10px}#hud span{padding:5px 6px;border-radius:6px!important}#pause{padding:6px 10px}.panel{max-height:94dvh}}

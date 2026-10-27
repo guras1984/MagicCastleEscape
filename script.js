@@ -249,7 +249,20 @@ function drawAtmosphere(zone){
  ctx.restore();
 }
 function drawAdventureOverlay(){if(mode!=='play'||!level||!player)return;
- ctx.save();const x=24,y=514,w=225,h=8;ctx.fillStyle='#14284699';ctx.beginPath();ctx.roundRect(x-5,y-8,w+10,25,8);ctx.fill();ctx.fillStyle='#ffffff55';ctx.fillRect(x,y,w,h);let progress=clamp(player.x/(level.exit.x||1),0,1);let grad=ctx.createLinearGradient(x,0,x+w,0);grad.addColorStop(0,'#80e9be');grad.addColorStop(1,'#ffdf7c');ctx.fillStyle=grad;ctx.fillRect(x,y,w*progress,h);ctx.fillStyle='#fff';ctx.font='bold 12px sans-serif';ctx.fillText('🏰  '+Math.floor(progress*100)+'%  →  🏁',x,y-13);
+ ctx.save();
+ // Stage progress lives at the TOP, safely clear of the touch controls and gameplay floor.
+ const x=24,y=83,w=232,h=8;
+ const progress=clamp(player.x/(level.exit.x||1),0,1);
+ ctx.save();ctx.shadowColor='#020c1d99';ctx.shadowBlur=14;ctx.shadowOffsetY=4;
+ ctx.fillStyle='#0e1c31d9';ctx.beginPath();ctx.roundRect(x-13,y-32,w+26,58,12);ctx.fill();ctx.restore();
+ ctx.lineWidth=1;ctx.strokeStyle='#d5c28a77';ctx.beginPath();ctx.roundRect(x-13,y-32,w+26,58,12);ctx.stroke();
+ ctx.font='700 12px system-ui,sans-serif';ctx.fillStyle='#f0e3c3';ctx.textAlign='left';ctx.fillText('STAGE PROGRESS',x,y-15);
+ ctx.textAlign='right';ctx.fillStyle='#f7db8e';ctx.font='800 15px system-ui,sans-serif';ctx.fillText(Math.floor(progress*100)+'%',x+w,y-14);
+ ctx.textAlign='left';ctx.fillStyle='#354862';ctx.beginPath();ctx.roundRect(x,y,w,h,4);ctx.fill();
+ let grad=ctx.createLinearGradient(x,0,x+w,0);grad.addColorStop(0,'#75cde7');grad.addColorStop(1,'#f2d18b');ctx.fillStyle=grad;
+ if(progress>0){ctx.beginPath();ctx.roundRect(x,y,Math.max(3,w*progress),h,4);ctx.fill()}
+ ctx.fillStyle='#f6e0ae';ctx.beginPath();ctx.arc(x+w*progress,y+4,4.5,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#bfcce1';ctx.font='10px system-ui,sans-serif';ctx.fillText('START',x,y+20);ctx.textAlign='right';ctx.fillText('EXIT',x+w,y+20);ctx.textAlign='left';
  if(combo>=2&&comboTimer>0){ctx.textAlign='right';ctx.font='bold '+(20+Math.min(combo,12))+'px sans-serif';ctx.shadowColor='#ffcf70';ctx.shadowBlur=13;ctx.fillStyle='#fff5b8';ctx.fillText(combo+' COMBO!',930,118);ctx.shadowBlur=0;ctx.font='13px sans-serif';ctx.fillText('연속 몬스터 처치',930,139)}
  ctx.restore();}
 let prev=0;function frame(ms){let dt=Math.min((ms-prev)/1000||0,.032);prev=ms;if(mode==='play')update(dt);draw();requestAnimationFrame(frame)}
