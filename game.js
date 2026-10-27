@@ -316,28 +316,43 @@ addEventListener('keydown',e=>{if(mapKey(e.code,true))e.preventDefault()});addEv
 document.querySelectorAll('[data-key]').forEach(btn=>{const key=btn.dataset.key;btn.addEventListener('pointerdown',e=>{e.preventDefault();btn.setPointerCapture(e.pointerId);input[key]=true});for(const type of ['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(type,()=>input[key]=false)});
 let started=false,paused=false,won=false,health=320;
 let state={x:-4.2,y:0,vy:0,vx:0,face:1,jumps:0,clock:0,walk:0,attackTime:-1,attackCd:0,hitCd:0,attacked:new Set(),lastStrike:0};
-const attackDuration=.72;
+const attackDuration=.76;
 function ease(a){return a*a*(3-2*a)}
 function mix(a,b,t){return a+(b-a)*t}
+// A forward-reaching weapon animation. All coordinates below are in the knight's
+// LOCAL forward/up plane: +Z is in front of the face and +Y is up. In 2.5D the
+// whole knight yaws left/right, so the same forward attack works both ways.
+// Rather than swinging the forearm in place, the HAND follows a designed path;
+// two-bone inverse kinematics then places the shoulder and elbow around it.
 function attackPose(t){
- // Side-view swordsmanship: all primary swing motion is around local X,
- // which maps into the screen's XY plane when the knight faces left/right.
- // Draw back -> blade rises -> full down-cut -> settled guard.
- const times=[0,.15,.27,.43,.60,.72];
- const arm=[-.18,-1.25,-2.02,.96,.35,-.18];
- const elbow=[-.12,-.22,-.47,-.27,-.14,-.12];
- const blade=[.15,.48,.05,-.52,-.14,.15];
- const twist=[0,-.14,-.20,.18,.09,0];
- const lean=[0,-.06,-.14,.16,.055,0];
+ const times=[0,.12,.24,.38,.48,.62,.76];
+ // Wrist target relative to shoulder (y, z). Wind-up -> forward drive -> recovery.
+ const wristY=[-.76,-.62,-.40,-.37,-.48,-.65,-.76];
+ const wristZ=[ .05,-.12, .45, .78, .80, .25, .05];
+ // World-facing blade direction: 0=upward, 1.57=straight ahead.
+ const aim=[.50,.18,1.05,1.39,1.68,.78,.50];
+ const twist=[0,-.09,-.13,.13,.13,.04,0];
+ const lean=[0,-.04,-.08,.12,.10,.03,0];
  let i=0;while(i<times.length-2&&t>times[i+1])i++;
  const u=ease(Math.min(1,Math.max(0,(t-times[i])/(times[i+1]-times[i]))));
- return {arm:mix(arm[i],arm[i+1],u),elbow:mix(elbow[i],elbow[i+1],u),blade:mix(blade[i],blade[i+1],u),twist:mix(twist[i],twist[i+1],u),lean:mix(lean[i],lean[i+1],u)};
+ return {wristY:mix(wristY[i],wristY[i+1],u),wristZ:mix(wristZ[i],wristZ[i+1],u),aim:mix(aim[i],aim[i+1],u),twist:mix(twist[i],twist[i+1],u),lean:mix(lean[i],lean[i+1],u)};
+}
+function solveSwordArm(y,z){
+ const upper=.49, fore=.44;
+ const reach=Math.hypot(y,z);
+ const clamped=Math.min(upper+fore-.012,Math.max(Math.abs(upper-fore)+.012,reach));
+ const scale=clamped/Math.max(.001,reach);
+ y*=scale;z*=scale;
+ const elbowBend=Math.acos(Math.max(-1,Math.min(1,(clamped*clamped-upper*upper-fore*fore)/(2*upper*fore))));
+ const target=Math.atan2(z,-y);
+ const upperAngle=target-Math.atan2(fore*Math.sin(elbowBend),upper+fore*Math.cos(elbowBend));
+ return {shoulder:-upperAngle,elbow:-elbowBend};
 }
 const tip=new THREE.Vector3(),oldTip=new THREE.Vector3();
 function swordWorldTip(){hero.swordRoot.updateWorldMatrix(true,false);return hero.swordRoot.localToWorld(hero.swordTip.clone())}
 function spawnTrail(){
  const tipNow=swordWorldTip();const h=hero.swordRoot.localToWorld(new THREE.Vector3(0,.3,0));
- if(state.attackTime<.25||state.attackTime>.57)return;
+ if(state.attackTime<.23||state.attackTime>.50)return;
  swordTrails.push({a:tipNow.clone(),b:h.clone(),life:.22});
  if(swordTrails.length>34)swordTrails.shift();
 }
@@ -377,7 +392,7 @@ let last=performance.now();function tick(now){requestAnimationFrame(tick);const 
   // Auto attack when nearby (no extra skill button); J demonstrates it at will.
   const near=monsters.find(e=>e.alive&&Math.abs(e.g.position.x-state.x)<2.7&&Math.abs(e.g.position.y-state.y)<2.1);
   state.attackCd=Math.max(0,state.attackCd-dt);state.hitCd=Math.max(0,state.hitCd-dt);
-  if(state.attackCd<=0&&(near||(input.attack&&!attackLatch))){state.attackTime=0;state.attackCd=.83;state.attacked.clear()}
+  if(state.attackCd<=0&&(near||(input.attack&&!attackLatch))){state.attackTime=0;state.attackCd=.89;state.attacked.clear()}
   attackLatch=input.attack;
   if(state.attackTime>=0){state.attackTime+=dt;if(state.attackTime>attackDuration)state.attackTime=-1}
   const stride=state.clock*11;state.walk+=Math.abs(state.vx)*dt;
@@ -396,20 +411,23 @@ let last=performance.now();function tick(now){requestAnimationFrame(tick);const 
   });
   hero.arms[0].shoulder.rotation.z=-.17;hero.arms[0].elbow.rotation.z=-.19;
   hero.arms[0].shoulder.rotation.x=Math.sin(stride)*Math.min(.29,Math.abs(state.vx)*.052);
-  const pose=state.attackTime>=0?attackPose(state.attackTime):{arm:-.18,elbow:-.12,blade:.15,twist:0,lean:0};
+  const pose=state.attackTime>=0?attackPose(state.attackTime):{wristY:-.76,wristZ:.05,aim:.50,twist:0,lean:0};
+  const armIK=solveSwordArm(pose.wristY,pose.wristZ);
   hero.arms[1].shoulder.rotation.z=-.15;
-  hero.arms[1].shoulder.rotation.x=pose.arm;
+  hero.arms[1].shoulder.rotation.x=armIK.shoulder;
   hero.arms[1].elbow.rotation.z=-.12;
-  hero.arms[1].elbow.rotation.x=pose.elbow;
+  hero.arms[1].elbow.rotation.x=armIK.elbow;
+  // Aim the ENTIRE sword in character space, compensating for both arm joints.
+  // The weapon now advances with the hand instead of orbiting around the elbow.
   hero.swordRoot.rotation.z=.06;
-  hero.swordRoot.rotation.x=pose.blade;
+  hero.swordRoot.rotation.x=pose.aim-armIK.shoulder-armIK.elbow;
   hero.body.rotation.z=pose.lean;
   hero.hips.rotation.y=pose.twist;
   hero.head.rotation.z=-hero.body.rotation.z*.4;
   animateCape(state.clock,state.vx);
   // Collision only on the cutting portion of the swing. Use actual physical blade-tip location.
   hero.g.updateWorldMatrix(true,true);
-  if(state.attackTime>.27&&state.attackTime<.51){
+  if(state.attackTime>.24&&state.attackTime<.49){
    spawnTrail();const wt=swordWorldTip();
    for(const e of monsters){
     if(!e.alive||state.attacked.has(e))continue;
