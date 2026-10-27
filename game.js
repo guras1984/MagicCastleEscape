@@ -129,21 +129,23 @@ function knight(){
  const ridge=cube(swordRoot,M.white,0,1.05,.105,.034,1.33,.03);ridge.castShadow=false;
  for(const dy of [.58,.82])sphere(swordRoot,M.gold,0,dy,.126,.027,.028,.02);
  // expressive 3.6-head-tall face. Visible from forward/side.
- const head=newGroup(body,0,2.4,.04);sphere(head,M.skin,0,.10,.02,.455,.47,.36);
- sphere(head,M.skin,0,-.17,.05,.36,.21,.33);
+ const head=newGroup(body,0,2.4,.04);sphere(head,M.skin,0,.10,.02,.435,.445,.345);
+ sphere(head,M.skin,0,-.145,.075,.34,.175,.305);
  for(const side of [-1,1]){
-  sphere(head,M.skin,side*.431,-.015,.005,.105,.13,.12);
-  sphere(head,M.skin,side*.43,-.017,.105,.057,.075,.046);
+  sphere(head,M.skin,side*.405,-.015,.005,.082,.108,.085);
+  sphere(head,M.skin,side*.415,-.012,.078,.037,.053,.032);
   // expressive eye with white, iris, tiny sparkle
-  sphere(head,M.white,side*.187,.085,.329,.148,.117,.058);
-  sphere(head,M.iris,side*.198,.09,.385,.076,.091,.032);
-  sphere(head,M.black,side*.197,.086,.407,.035,.065,.013);
-  sphere(head,M.white,side*.18,.121,.423,.024,.028,.011);
-  let brow=sphere(head,M.hair,side*.184,.244,.354,.16,.033,.028);brow.rotation.z=side*.12;
-  sphere(head,new THREE.MeshStandardMaterial({color:0xe29f8f}),side*.3,-.105,.317,.14,.04,.016);
+  sphere(head,M.white,side*.172,.09,.337,.108,.094,.035);
+  sphere(head,M.iris,side*.188,.085,.367,.055,.073,.018);
+  sphere(head,M.black,side*.190,.085,.385,.029,.048,.009);
+  sphere(head,M.white,side*.173,.115,.397,.014,.019,.006);
+  let brow=sphere(head,M.hair,side*.18,.222,.345,.113,.020,.019);brow.rotation.z=side*.12;
+  sphere(head,new THREE.MeshStandardMaterial({color:0xe29f8f}),side*.275,-.10,.303,.09,.026,.012);
  }
- sphere(head,M.skin,0,-.057,.385,.065,.077,.05);
- const smile=torus(head,M.hair,0,-.168,.354,.085,.012);smile.scale.y=.34;smile.rotation.z=Math.PI;
+ sphere(head,M.skin,0,-.062,.365,.044,.045,.037);
+ const smile=torus(head,M.hair,0,-.165,.344,.067,.007);smile.scale.y=.22;smile.rotation.z=Math.PI;
+ // Side-readable, softly modeled cheek and eye; subtle so the face is not bulbous.
+ for(const side of [-1,1]){sphere(head,M.skin,side*.334,-.095,.188,.083,.075,.12);sphere(head,M.white,side*.350,.065,.155,.032,.060,.075);sphere(head,M.iris,side*.372,.066,.188,.015,.040,.041);}
  // layered flowing hair sculpted using multiple variable-radius ribbons
  sphere(head,M.hair,0,.39,-.055,.49,.30,.39);
  curvedSpike(head,M.hairLit,[[-.4,.37,.17],[-.22,.53,.32],[.1,.49,.43],[.20,.30,.42]],.15);
@@ -314,21 +316,28 @@ addEventListener('keydown',e=>{if(mapKey(e.code,true))e.preventDefault()});addEv
 document.querySelectorAll('[data-key]').forEach(btn=>{const key=btn.dataset.key;btn.addEventListener('pointerdown',e=>{e.preventDefault();btn.setPointerCapture(e.pointerId);input[key]=true});for(const type of ['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(type,()=>input[key]=false)});
 let started=false,paused=false,won=false,health=320;
 let state={x:-4.2,y:0,vy:0,vx:0,face:1,jumps:0,clock:0,walk:0,attackTime:-1,attackCd:0,hitCd:0,attacked:new Set(),lastStrike:0};
-const attackDuration=.66;
+const attackDuration=.72;
 function ease(a){return a*a*(3-2*a)}
 function mix(a,b,t){return a+(b-a)*t}
 function attackPose(t){
- // Real action keyframes: anticipate -> whip torso -> follow through -> balance recovery.
- const times=[0,.17,.31,.51,.66],shoulders=[-.18,.75,.85,-.78,-.18],elbows=[-.24,-.70,-.50,.12,-.24],wrists=[2.72,1.38,.85,-.62,2.72],torso=[0,-.18,-.30,.14,0],lean=[0,.12,.08,-.15,0];
- let i=0;while(i<3&&t>times[i+1])i++;
+ // Side-view swordsmanship: all primary swing motion is around local X,
+ // which maps into the screen's XY plane when the knight faces left/right.
+ // Draw back -> blade rises -> full down-cut -> settled guard.
+ const times=[0,.15,.27,.43,.60,.72];
+ const arm=[-.18,-1.25,-2.02,.96,.35,-.18];
+ const elbow=[-.12,-.22,-.47,-.27,-.14,-.12];
+ const blade=[.15,.48,.05,-.52,-.14,.15];
+ const twist=[0,-.14,-.20,.18,.09,0];
+ const lean=[0,-.06,-.14,.16,.055,0];
+ let i=0;while(i<times.length-2&&t>times[i+1])i++;
  const u=ease(Math.min(1,Math.max(0,(t-times[i])/(times[i+1]-times[i]))));
- return {shoulder:mix(shoulders[i],shoulders[i+1],u),elbow:mix(elbows[i],elbows[i+1],u),wrist:mix(wrists[i],wrists[i+1],u),torso:mix(torso[i],torso[i+1],u),lean:mix(lean[i],lean[i+1],u)};
+ return {arm:mix(arm[i],arm[i+1],u),elbow:mix(elbow[i],elbow[i+1],u),blade:mix(blade[i],blade[i+1],u),twist:mix(twist[i],twist[i+1],u),lean:mix(lean[i],lean[i+1],u)};
 }
 const tip=new THREE.Vector3(),oldTip=new THREE.Vector3();
 function swordWorldTip(){hero.swordRoot.updateWorldMatrix(true,false);return hero.swordRoot.localToWorld(hero.swordTip.clone())}
 function spawnTrail(){
  const tipNow=swordWorldTip();const h=hero.swordRoot.localToWorld(new THREE.Vector3(0,.3,0));
- if(state.attackTime<.18||state.attackTime>.55)return;
+ if(state.attackTime<.25||state.attackTime>.57)return;
  swordTrails.push({a:tipNow.clone(),b:h.clone(),life:.22});
  if(swordTrails.length>34)swordTrails.shift();
 }
@@ -387,18 +396,20 @@ let last=performance.now();function tick(now){requestAnimationFrame(tick);const 
   });
   hero.arms[0].shoulder.rotation.z=-.17;hero.arms[0].elbow.rotation.z=-.19;
   hero.arms[0].shoulder.rotation.x=Math.sin(stride)*Math.min(.29,Math.abs(state.vx)*.052);
-  const pose=state.attackTime>=0?attackPose(state.attackTime):{shoulder:-.20,elbow:-.16,wrist:2.74,torso:0,lean:0};
-  hero.arms[1].shoulder.rotation.z=pose.shoulder;
-  hero.arms[1].shoulder.rotation.x=state.attackTime>=0?-.10:.03;
-  hero.arms[1].elbow.rotation.z=pose.elbow;
-  hero.swordRoot.rotation.z=pose.wrist;
+  const pose=state.attackTime>=0?attackPose(state.attackTime):{arm:-.18,elbow:-.12,blade:.15,twist:0,lean:0};
+  hero.arms[1].shoulder.rotation.z=-.15;
+  hero.arms[1].shoulder.rotation.x=pose.arm;
+  hero.arms[1].elbow.rotation.z=-.12;
+  hero.arms[1].elbow.rotation.x=pose.elbow;
+  hero.swordRoot.rotation.z=.06;
+  hero.swordRoot.rotation.x=pose.blade;
   hero.body.rotation.z=pose.lean;
-  hero.hips.rotation.y=pose.torso;
+  hero.hips.rotation.y=pose.twist;
   hero.head.rotation.z=-hero.body.rotation.z*.4;
   animateCape(state.clock,state.vx);
   // Collision only on the cutting portion of the swing. Use actual physical blade-tip location.
   hero.g.updateWorldMatrix(true,true);
-  if(state.attackTime>.30&&state.attackTime<.51){
+  if(state.attackTime>.27&&state.attackTime<.51){
    spawnTrail();const wt=swordWorldTip();
    for(const e of monsters){
     if(!e.alive||state.attacked.has(e))continue;
