@@ -372,8 +372,12 @@ let last=performance.now();function tick(now){requestAnimationFrame(tick);const 
   attackLatch=input.attack;
   if(state.attackTime>=0){state.attackTime+=dt;if(state.attackTime>attackDuration)state.attackTime=-1}
   const stride=state.clock*11;state.walk+=Math.abs(state.vx)*dt;
-  hero.g.position.set(state.x,state.y,.45);hero.g.scale.x=state.face;
-  hero.body.rotation.y=(state.attackTime>=0)?state.face*.13:Math.sin(stride*.5)*Math.min(.08,Math.abs(state.vx)*.02);
+  hero.g.position.set(state.x,state.y,.45);
+  // 2.5D: facing is a real yaw rotation, not a negative X scale or a frontal pose.
+  // Forward of the sculpted face is +Z; rotate toward the direction of travel.
+  const desiredYaw=state.face>0?1.20:-1.94;
+  hero.g.rotation.y+=Math.atan2(Math.sin(desiredYaw-hero.g.rotation.y),Math.cos(desiredYaw-hero.g.rotation.y))*Math.min(1,dt*15);
+  hero.body.rotation.y=(state.attackTime>=0)?-.12:Math.sin(stride*.5)*Math.min(.045,Math.abs(state.vx)*.012);
   hero.body.position.y=state.jumps?0:Math.abs(Math.sin(stride))*.035*Math.min(1,Math.abs(state.vx)/3);
   hero.legs.forEach((l,i)=>{
    const sign=i?1:-1,sw=Math.sin(stride+i*Math.PI)*Math.min(1,Math.abs(state.vx)/4);
@@ -405,6 +409,9 @@ let last=performance.now();function tick(now){requestAnimationFrame(tick);const 
   }
   for(const e of monsters){if(!e.alive)continue;
    e.g.position.x=e.x+Math.sin(t*.82+e.phase)*.73;
+   // Creatures turn toward the knight as well, revealing their side profile.
+   const enemyFace=state.x>=e.g.position.x?1.16:-1.98;
+   e.g.rotation.y+=Math.atan2(Math.sin(enemyFace-e.g.rotation.y),Math.cos(enemyFace-e.g.rotation.y))*Math.min(1,dt*4.5);
    e.torso.position.y=.75+Math.sin(t*2.6+e.phase)*.075;
    e.torso.rotation.z=Math.sin(t*1.5+e.phase)*.075;
    if(Math.abs(e.g.position.x-state.x)<.76&&Math.abs(state.y)<.6&&state.hitCd<=0){state.hitCd=1.3;health-=15;sparkBurst(state.x,state.y+1.6,1.1,7,'pink');}
@@ -420,8 +427,8 @@ let last=performance.now();function tick(now){requestAnimationFrame(tick);const 
  redrawTrail(dt);
  rune.rotation.z=t*.23;inner.material.opacity=.24+Math.sin(t*2.9)*.08;gemGlow(t);
  let targetX=Math.max(-1.5,Math.min(29.3,state.x+1.7));
- const target=new THREE.Vector3(targetX+2.0,5.5,19.8);
- cam.position.lerp(target,.055);cam.lookAt(targetX,1.88,0);
+ const target=new THREE.Vector3(targetX+1.0,4.0,22.5);
+ cam.position.lerp(target,.055);cam.lookAt(targetX,1.65,0);
  renderer.render(scene,cam);
 }
 function gemGlow(t){portalLight.intensity=14+Math.sin(t*2.7)*5;rim.intensity=2.45+Math.sin(t*.23)*.24}
@@ -438,5 +445,5 @@ let soundEnabled=false,audioContext;document.getElementById('soundBtn').addEvent
 function strikeSound(){if(!soundEnabled)return;try{audioContext ||=new (window.AudioContext||window.webkitAudioContext)();const t=audioContext.currentTime,osc=audioContext.createOscillator(),gain=audioContext.createGain();osc.type='sawtooth';osc.frequency.setValueAtTime(570,t);osc.frequency.exponentialRampToValueAtTime(145,t+.15);gain.gain.setValueAtTime(.028,t);gain.gain.exponentialRampToValueAtTime(.001,t+.15);osc.connect(gain).connect(audioContext.destination);osc.start(t);osc.stop(t+.17)}catch{}}
 // Sound is optional; all gameplay remains available when browser audio is blocked.
 // First render starts before play so visual art direction can be judged immediately.
-hero.arms[1].shoulder.rotation.z=-.2;hero.swordRoot.rotation.z=2.74;animateCape(0,0);cam.position.set(-1.1,5.5,19.8);cam.lookAt(-2.5,1.88,0);
+hero.arms[1].shoulder.rotation.z=-.2;hero.swordRoot.rotation.z=2.74;animateCape(0,0);cam.position.set(-1.5,4.0,22.5);cam.lookAt(-2.5,1.65,0);hero.g.rotation.y=1.20;monsters.forEach(e=>e.g.rotation.y=-1.98);
 requestAnimationFrame(tick);
