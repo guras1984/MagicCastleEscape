@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const MODEL_VARIANT=1;
+const MODEL_VARIANT=2;
 const c=document.querySelector('#game'),ctx=c.getContext('2d'),W=960,H=540,ui={screen:document.querySelector('#screen'),title:document.querySelector('#title'),msg:document.querySelector('#message'),options:document.querySelector('#options'),actions:document.querySelector('#actions'),hp:document.querySelector('#hp'),stage:document.querySelector('#stageName'),coins:document.querySelector('#coins')};
 const themes=[{name:'초록빛 성',sky:['#8ce6fa','#e5faff'],land:'#83c879',edge:'#397d57',hill:'#9ad6b1'},{name:'수정 동굴',sky:['#5264b8','#b0a4f2'],land:'#7478bd',edge:'#48447c',hill:'#a3a2eb'},{name:'불꽃의 성',sky:['#ff9d68','#ffe5a2'],land:'#ae7869',edge:'#7c3c43',hill:'#f3b16b'},{name:'얼음 궁전',sky:['#8cd6f6','#e6fbff'],land:'#9bcde0',edge:'#5e8eaf',hill:'#b8e9f4'},{name:'하늘의 성',sky:['#68b9ff','#d8f4ff'],land:'#9fc4a4',edge:'#648c7d',hill:'#c7ebed'},{name:'마왕의 성',sky:['#7d6cb5','#e5b9d8'],land:'#8975a2',edge:'#534a78',hill:'#b9a0c6'}];
 const weapons=[{name:'나무검',icon:'🗡️',type:'melee',power:1,range:55,rate:.28},{name:'기사의 검',icon:'⚔️',type:'melee',power:2,range:75,rate:.3},{name:'전투 도끼',icon:'🪓',type:'melee',power:3,range:65,rate:.47},{name:'마법 창',icon:'🔱',type:'melee',power:2,range:115,rate:.36},{name:'번개 망치',icon:'🔨',type:'melee',power:4,range:70,rate:.62},{name:'나무 활',icon:'🏹',type:'ranged',power:1,speed:470,rate:.4},{name:'얼음 지팡이',icon:'❄️',type:'ranged',power:2,speed:390,rate:.56},{name:'화염 지팡이',icon:'🔥',type:'ranged',power:3,speed:420,rate:.68},{name:'별빛 마법봉',icon:'✨',type:'ranged',power:2,speed:550,rate:.32},{name:'용의 석궁',icon:'🐉',type:'ranged',power:5,speed:610,rate:.8}];
@@ -17,7 +17,7 @@ function grantXP(amount){save.petXP+=Math.ceil(amount*.35);while(save.petXP>=sav
 function petForm(){return save.petLevel>=15?'전설':save.petLevel>=8?'성장':'아기'}
 function petMenu(){show('🥚 나의 펫',`현재 펫: ${pets[save.pet].icon} ${pets[save.pet].name}<br>펫 레벨 ${save.petLevel} · ${petForm()} 단계 · 경험치 ${save.petXP}/${save.petLevel*35}<br>펫은 Lv.8에 성장, Lv.15에 전설 모습으로 진화해요.`);pets.forEach((pet,i)=>button(`${save.pet===i?'✓ ':''}${pet.icon} ${pet.name} · ${pet.desc}`,()=>{save.pet=i;persist();petMenu()},save.pet!==i));button('◀ 돌아가기',startMenu,true)}
 
-const storeKey='magic-castle-model-2-save-v1';let save;try{save=JSON.parse(localStorage.getItem(storeKey))||{}}catch{save={}};save={unlocked:1,best:{},coins:0,weapon:1,shield:0,hero:0,achievements:[],seen:[],level:1,xp:0,pet:0,petXP:0,petLevel:1,skillUses:0,shopHearts:0,shopLuck:0,heroLocked:false,...save};
+const storeKey='magic-castle-model-3-save-v1';let save;try{save=JSON.parse(localStorage.getItem(storeKey))||{}}catch{save={}};save={unlocked:1,best:{},coins:0,weapon:1,shield:0,hero:0,achievements:[],seen:[],level:1,xp:0,pet:0,petXP:0,petLevel:1,skillUses:0,shopHearts:0,shopLuck:0,heroLocked:false,...save};
 const persist=()=>{try{localStorage.setItem(storeKey,JSON.stringify(save))}catch{}};
 save.hero=Math.max(0,Math.min(3,Math.floor(Number(save.hero)||0)));save.heroLocked=Boolean(save.heroLocked||save.unlocked>1||save.level>1);
 save.coins=Math.max(0,Math.floor(Number(save.coins)||0));save.weapon=Math.max(1,Math.min(5,Number(save.weapon)||1));save.shield=Math.max(0,Number(save.shield)||0);save.shopHearts=Math.max(0,Math.min(5,Math.floor(Number(save.shopHearts)||0)));save.shopLuck=Math.max(0,Math.min(3,Math.floor(Number(save.shopLuck)||0)));
@@ -341,5 +341,5 @@ draw=function(){originalDraw();if(!level)return;
  ctx.restore();if(mode==='play'){ctx.save();ctx.fillStyle='#101b30b8';ctx.fillRect(280,6,400,27);ctx.fillStyle='#f5e7c8';ctx.font='bold 15px sans-serif';ctx.textAlign='center';ctx.fillText(`${String(level.n).padStart(2,'0')}  ·  ${level.architecture}`,480,25);ctx.restore();}
 };
 
-startMenu();document.title='Magic Castle · 붉은 여우검사';requestAnimationFrame(frame);
+startMenu();document.title='Magic Castle · 하늘의 수호자';requestAnimationFrame(frame);
 })();

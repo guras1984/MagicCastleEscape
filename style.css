@@ -78,7 +78,7 @@ body{font-family:Trebuchet MS,Segoe UI,Malgun Gothic,sans-serif;background:#0b14
 .portal{color:#d5e7ee!important}
 @media(max-width:700px){#hud{left:7px;right:7px;gap:3px;font-size:11px}#hud span{padding:6px 7px}.panel{border-radius:9px}}
 
-/* 붉은 여우검사: cohesive game menu treatment */
-.panel {background:linear-gradient(145deg, #603e55,#161f38 80%);border-color:#f4c6a4;}
-.panel h1 {color:#ffe2c4}
-#options .hero-card.active {border-color:#e6a3a4}
+/* 하늘의 수호자: cohesive game menu treatment */
+.panel {background:linear-gradient(145deg, #354669,#161f38 80%);border-color:#b9c8ef;}
+.panel h1 {color:#e0e6fc}
+#options .hero-card.active {border-color:#adc5f7}
