@@ -99,3 +99,15 @@ body{font-family:Trebuchet MS,Segoe UI,Malgun Gothic,sans-serif;background:#0b14
 #joystick-knob{background:radial-gradient(circle at 33% 23%,#e6f2ff,#5d89b6 75%)!important;box-shadow:0 4px 12px #04152e9c,inset 0 1px #fff8!important}
 .pad [data-key=jump]{background:radial-gradient(circle at 33% 25%,#f4deb0,#b58d52 80%)!important;color:#243451!important;box-shadow:0 5px 18px #01091499,inset 0 2px #fff8!important}
 @media(max-width:650px){#hud{gap:3px;font-size:10px}#hud span{padding:5px 6px;border-radius:6px!important}#pause{padding:6px 10px}.panel{max-height:94dvh}}
+
+/* Responsive game HUD: health and progress share the same top row. */
+#hud{justify-content:initial!important;align-items:center!important;flex-wrap:nowrap;gap:clamp(3px,.7vw,10px)!important}
+#hud #hp{flex:0 1 auto;max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#stageProgress{flex:0 0 clamp(98px,16vw,205px);min-width:0;padding:5px 10px 7px;background:linear-gradient(145deg,#0a1525f0,#243a56e9);color:#f5e5b7;border:1px solid #d2b8798c;border-radius:10px;box-shadow:0 5px 15px #07112288;backdrop-filter:blur(8px)}
+.progress-caption{font-size:clamp(10px,1vw,12px);display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:3px;white-space:nowrap}.progress-caption strong{color:#ffe2a0;font-variant-numeric:tabular-nums}.progress-track{height:7px;border-radius:9px;overflow:hidden;background:#0b172b;border:1px solid #7190aa80}.progress-track>div{height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#5abddc,#ffe09b);box-shadow:0 0 10px #77d6edaa;transition:width .09s linear}
+#hud #stageName{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#hud #coins{margin-left:auto;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#pause{flex-shrink:0}
+#keyboard-guide{position:absolute;bottom:clamp(10px,3vh,26px);left:50%;transform:translateX(-50%);z-index:3;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px 14px;padding:10px 18px;border:1px solid #d4c39983;border-radius:12px;background:#101d32d9;box-shadow:0 8px 30px #0007;backdrop-filter:blur(10px);font-size:12px;font-weight:700;color:#dbe5f4;pointer-events:none}#keyboard-guide span{white-space:nowrap}#keyboard-guide kbd{display:inline-block;padding:4px 7px;margin-right:2px;border-radius:5px;border:1px solid #aac7e880;border-bottom:3px solid #a9bad2;background:#243b58;color:#fff;font:700 11px system-ui}
+@media(pointer:fine){#controls{display:none!important}}
+@media(pointer:coarse){#keyboard-guide{display:none!important}}
+@media(max-width:700px){#stageProgress{flex-basis:95px;padding:4px 6px}#hud #hp{max-width:39%}#hud #stageName{max-width:18%}#hud #coins{max-width:21%}}
+@media(max-height:410px) and (pointer:fine){#keyboard-guide{bottom:7px;padding:6px 12px}}
