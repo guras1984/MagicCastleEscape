@@ -1,0 +1,6 @@
+const vm=require('node:vm'),fs=require('node:fs'),assert=require('node:assert/strict');
+(async()=>{
+ const calls=[],store=new Map();const ctx={window:{},crypto:require('node:crypto').webcrypto,AbortController,setTimeout,clearTimeout,localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)},fetch:async(url,options)=>{calls.push({url,...options});return {ok:true,json:async()=>url.endsWith('mce_guest_start')?'run-id':url.endsWith('mce_guest_board')?[]:null}}};vm.createContext(ctx);vm.runInContext(fs.readFileSync('leaderboard.js','utf8'),ctx);
+ const api=ctx.window.MagicRanking,id=await api.start(1,0,'normal');assert.equal(id,'run-id');await api.finish({id,seconds:20,damage:0},'모험가');await api.board('normal',0);
+ const first=JSON.parse(calls[0].body),finish=JSON.parse(calls[1].body);assert.equal(first.p_token.length,72);assert.equal(first.p_token,finish.p_token);assert.equal(calls.length,3);assert.ok(calls.every(c=>!c.url.includes('/auth/')&&!c.body.includes('resume')&&!c.body.includes('payload')));assert.deepEqual(Object.keys(finish).sort(),['p_damage','p_id','p_nickname','p_seconds','p_token']);console.log('PASS: guest identity persisted, no auth, only ranking fields transmitted, no progress upload');
+})().catch(e=>{console.error(e);process.exitCode=1});

@@ -16,7 +16,7 @@ function petForm(){return save.petLevel>=15?'전설':save.petLevel>=8?'성장':'
 function petMenu(){show('🥚 나의 펫',`현재 펫: ${pets[save.pet].icon} ${pets[save.pet].name}<br>펫 레벨 ${save.petLevel} · ${petForm()} 단계 · 경험치 ${save.petXP}/${save.petLevel*35}<br>펫은 Lv.8에 성장, Lv.15에 전설 모습으로 진화해요.`);pets.forEach((pet,i)=>button(`${save.pet===i?'✓ ':''}${pet.icon} ${pet.name} · ${pet.desc}`,()=>{save.pet=i;persist();petMenu()},save.pet!==i));button('◀ 돌아가기',startMenu,true)}
 
 const storeKey='magic-castle-model-3-save-v1';let save;try{save=JSON.parse(localStorage.getItem(storeKey))||{}}catch{save={}};save={unlocked:1,best:{},coins:0,weapon:1,shield:0,hero:0,achievements:[],seen:[],level:1,xp:0,pet:0,petXP:0,petLevel:1,skillUses:0,shopHearts:0,shopLuck:0,heroLocked:false,...save};
-const persist=()=>{try{localStorage.setItem(storeKey,JSON.stringify(save))}catch{}};
+const persist=()=>{try{localStorage.setItem(storeKey,JSON.stringify(save));return true}catch{return false}};
 if(save.schemaVersion!==2){save.hero=Number(save.hero)>=2?1:0;save.schemaVersion=2;}save.hero=save.hero===1?1:0;save.heroLocked=Boolean(save.heroLocked||save.unlocked>1||save.level>1);
 save.coins=Math.max(0,Math.floor(Number(save.coins)||0));save.weapon=Math.max(1,Math.min(5,Number(save.weapon)||1));save.shield=Math.max(0,Number(save.shield)||0);save.shopHearts=Math.max(0,Math.min(5,Math.floor(Number(save.shopHearts)||0)));save.shopLuck=Math.max(0,Math.min(3,Math.floor(Number(save.shopLuck)||0)));
 let mode='menu',level=null,player=null,camera=0,t=0,elapsed=0,stageCoins=0,stageDamage=0,checkpoint=0,particles=[],projectiles=[],heroShots=[],keys={},difficulty='normal',audio=null,musicOn=true,lastBeat=-1,shake=0,notice='',noticeTime=0,combo=0,comboTimer=0,defeated=0;
@@ -56,7 +56,7 @@ function musicDrum(kind){
 
 function button(label,fn,secondary=false){let b=document.createElement('button');b.textContent=label;if(secondary)b.className='secondary';b.onclick=()=>{unlockAudio();sound(620,.08);fn()};ui.actions.append(b);return b}
 function show(title,msg){mode='menu';ui.screen.classList.remove('hidden');ui.title.textContent=title;ui.msg.innerHTML=msg;ui.options.innerHTML='';ui.actions.innerHTML='';keys={}}
-function startMenu(){show('🏰 마법의 성 탈출 대작전','동화 속 판타지 모험 · 기사와 법사 · 성장하는 펫!<br>30개 스테이지 · 보스 6종 · 무기 10종!<br>자동 공격 · 2단 점프: 스페이스 · 무기: Q / E');for(let d of [['easy','쉬움'],['normal','보통'],['hard','어려움']]){let b=document.createElement('button');b.textContent=d[1];b.className=difficulty===d[0]?'selected':'';b.onclick=()=>{difficulty=d[0];startMenu()};ui.options.append(b)}const chooser=document.createElement('div');chooser.className='hero-chooser';heroes.forEach((h,i)=>{const b=document.createElement('button');b.className='hero-card'+(save.hero===i?' active':'');const combat=combatStyles[i];b.innerHTML=`<span class="hero-icon">${h.icon}</span><span class="hero-role">${combat.type==='melee'?'근거리':'원거리'} · ${combat.range}px</span><strong>${h.name}</strong><small>${h.desc}</small>`;b.disabled=save.heroLocked&&save.hero!==i;b.onclick=()=>{if(save.heroLocked)return;save.hero=i;persist();startMenu()};chooser.append(b)});ui.options.append(chooser);if(save.heroLocked){const note=document.createElement('p');note.textContent='🔒 모험 중에는 처음 선택한 직업이 유지됩니다. 직업 변경은 저장 데이터 관리에서 새 게임을 시작해야 합니다.';ui.options.append(note)}button(save.heroLocked?'▶ 모험 이어하기':'▶ 직업 확정하고 모험 시작',()=>save.resume?restoreSnapshot(save.resume):loadStage(save.heroLocked?save.unlocked:1));button('🗺 월드맵',worldMap,true);button('🛒 상점',shop,true);button('🥚 펫 선택',petMenu,true);button('🏆 기록 / 업적',records,true);button('☁ 클라우드 저장 / 불러오기',cloudMenu,true);button('🌐 온라인 랭킹',rankingMenu,true);button('⚙ 저장 데이터 관리',saveManager,true);button(musicOn?'🔊 음악 켜짐':'🔇 음악 꺼짐',()=>{musicOn=!musicOn;startMenu()},true)}
+function startMenu(){show('🏰 마법의 성 탈출 대작전','동화 속 판타지 모험 · 기사와 법사 · 성장하는 펫!<br>30개 스테이지 · 보스 6종 · 무기 10종!<br>자동 공격 · 2단 점프: 스페이스 · 무기: Q / E');for(let d of [['easy','쉬움'],['normal','보통'],['hard','어려움']]){let b=document.createElement('button');b.textContent=d[1];b.className=difficulty===d[0]?'selected':'';b.onclick=()=>{difficulty=d[0];startMenu()};ui.options.append(b)}const chooser=document.createElement('div');chooser.className='hero-chooser';heroes.forEach((h,i)=>{const b=document.createElement('button');b.className='hero-card'+(save.hero===i?' active':'');const combat=combatStyles[i];b.innerHTML=`<span class="hero-icon">${h.icon}</span><span class="hero-role">${combat.type==='melee'?'근거리':'원거리'} · ${combat.range}px</span><strong>${h.name}</strong><small>${h.desc}</small>`;b.disabled=save.heroLocked&&save.hero!==i;b.onclick=()=>{if(save.heroLocked)return;save.hero=i;persist();startMenu()};chooser.append(b)});ui.options.append(chooser);if(save.heroLocked){const note=document.createElement('p');note.textContent='🔒 모험 중에는 처음 선택한 직업이 유지됩니다. 직업 변경은 저장 데이터 관리에서 새 게임을 시작해야 합니다.';ui.options.append(note)}button(save.heroLocked?'▶ 모험 이어하기':'▶ 직업 확정하고 모험 시작',()=>continueAdventure());button('🗺 월드맵',worldMap,true);button('🛒 상점',shop,true);button('🥚 펫 선택',petMenu,true);button('🏆 기록 / 업적',records,true);button('💾 이 기기에 저장',localSaveMenu,true);button('🌐 온라인 랭킹',rankingMenu,true);button('⚙ 저장 데이터 관리',saveManager,true);button(musicOn?'🔊 음악 켜짐':'🔇 음악 꺼짐',()=>{musicOn=!musicOn;startMenu()},true)}
 function saveManager(){
  show('⚙ 저장 데이터 관리',`현재 보유 동전: 🪙 ${save.coins}<br>최고 해금 스테이지: ${save.unlocked}/30<br><small>기존 플레이 기록은 자동으로 삭제되지 않습니다.</small>`);
  button('🪙 동전만 0개로 초기화',()=>{
@@ -65,7 +65,7 @@ function saveManager(){
  });
  button('🗑 전체 게임 기록 초기화',()=>{
   if(!confirm('모든 게임 기록을 삭제할까요? 이 작업은 되돌릴 수 없습니다.'))return;
-  try{localStorage.removeItem(storeKey)}catch{}
+  try{localStorage.removeItem(storeKey);localStorage.removeItem(resumeKey);localStorage.removeItem(pendingRankKey)}catch{}
   save={unlocked:1,best:{},coins:0,weapon:1,shield:0,hero:0,achievements:[],seen:[],level:1,xp:0,pet:0,petXP:0,petLevel:1,skillUses:0,shopHearts:0,shopLuck:0,heroLocked:false,schemaVersion:2};level=null;player=null;persist();startMenu();
  });
  button('◀ 돌아가기',startMenu,true);
@@ -312,7 +312,7 @@ joy.addEventListener('pointerdown',e=>{if(joyPointer!==null)return;e.preventDefa
 joy.addEventListener('pointermove',e=>{if(e.pointerId===joyPointer){e.preventDefault();updateJoystick(e)}});
 for(const name of ['pointerup','pointercancel','lostpointercapture'])joy.addEventListener(name,e=>{if(e.pointerId===joyPointer)resetJoystick()});
 window.addEventListener('blur',resetJoystick);
-const mapping={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'jump',Space:'jump',KeyW:'jump',KeyZ:'attack',KeyJ:'attack',KeyX:'attack',KeyK:'attack',};window.addEventListener('keydown',e=>{if(e.target?.matches?.('input,textarea,select,[contenteditable]'))return;if(mapping[e.code]){e.preventDefault();keys[mapping[e.code]]=true}if(!e.repeat&&e.code==='KeyQ')cycleWeapon(-1);if(!e.repeat&&e.code==='KeyE')cycleWeapon(1);if(e.code==='Escape'){if(mode==='play')pause();else if(mode==='pause')resume()}});window.addEventListener('keyup',e=>{if(mapping[e.code]){e.preventDefault();keys[mapping[e.code]]=false}});document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);keys[k]=true;b.classList.add('down')});for(let event of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(event,()=>{keys[k]=false;b.classList.remove('down')})});function pause(){rememberProgress();mode='pause';show('⏸ 일시정지','잠시 쉬었다가 다시 모험하세요!');mode='pause';button('▶ 계속하기',resume);button('☁ 클라우드 저장 / 불러오기',cloudMenu,true);button('🔁 스테이지 다시 시작',()=>loadStage(level.n),true);button('🗺 월드맵',worldMap,true);button('🏠 처음으로',startMenu,true)}function resume(){mode='play';ui.screen.classList.add('hidden')};document.querySelector('#pause').onclick=()=>{if(mode==='play')pause();else if(mode==='pause')resume()};document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='play')pause()});
+const mapping={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'jump',Space:'jump',KeyW:'jump',KeyZ:'attack',KeyJ:'attack',KeyX:'attack',KeyK:'attack',};window.addEventListener('keydown',e=>{if(e.target?.matches?.('input,textarea,select,[contenteditable]'))return;if(mapping[e.code]){e.preventDefault();keys[mapping[e.code]]=true}if(!e.repeat&&e.code==='KeyQ')cycleWeapon(-1);if(!e.repeat&&e.code==='KeyE')cycleWeapon(1);if(e.code==='Escape'){if(mode==='play')pause();else if(mode==='pause')resume()}});window.addEventListener('keyup',e=>{if(mapping[e.code]){e.preventDefault();keys[mapping[e.code]]=false}});document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);keys[k]=true;b.classList.add('down')});for(let event of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(event,()=>{keys[k]=false;b.classList.remove('down')})});function pause(){rememberProgress();mode='pause';show('⏸ 일시정지','잠시 쉬었다가 다시 모험하세요!');mode='pause';button('▶ 계속하기',resume);button('💾 이 기기에 저장',localSaveMenu,true);button('🔁 스테이지 다시 시작',()=>loadStage(level.n),true);button('🗺 월드맵',worldMap,true);button('🏠 처음으로',startMenu,true)}function resume(){mode='play';ui.screen.classList.add('hidden')};document.querySelector('#pause').onclick=()=>{if(mode==='play')pause();else if(mode==='pause')resume()};document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='play')pause()});
 // WORLDCRAFT EDITION: thirty deterministic stage-specific traversal systems.
 const stageArchitectures=['숲의 흔들다리','고목의 뿌리길','버섯 계단','수호자의 폐허','가시 덩굴 관문','수정 광산','반사광 협곡','수정 승강장','광맥 미로','균열의 제단','황혼의 절벽','모래시계 유적','바람의 첨탑','화염 분화구','태양의 문','얼어붙은 호수','눈보라 통로','빙하의 톱니','서리 탑','백야의 성벽','잊힌 정원','가시꽃 회랑','고대 수로','별빛 온실','정령의 성소','공중 회랑','중력의 계단','마력 회전탑','별의 심판대','최후의 성채'];
 const zoneMaterials=[['#315d50','#79b38b','#173b34'],['#4a4b81','#a6b3ed','#2a2955'],['#775342','#edb36b','#442f37'],['#4a7794','#b9e8f2','#284c6b'],['#5b7461','#b5d9a5','#344d42'],['#4c426e','#c2b2f6','#272444']];
@@ -391,10 +391,10 @@ draw=function(){originalDraw();if(!level)return;
  ctx.restore();if(mode==='play'){ctx.save();ctx.fillStyle='#101b30b8';ctx.fillRect(280,6,400,27);ctx.fillStyle='#f5e7c8';ctx.font='bold 15px sans-serif';ctx.textAlign='center';ctx.fillText(`${String(level.n).padStart(2,'0')}  ·  ${level.architecture}`,480,25);ctx.restore();}
 };
 
-// Cloud saves are explicit; only the browser checkpoint is saved automatically.
+// Game progress is stored locally; only completed scores go online.
 const resumeKey=storeKey+'-resume-v2',pendingRankKey=storeKey+'-pending-rank';
-let rankTicket=null,rankGeneration=0,rankStatus='',cloudBusy=false;
-try{const local=JSON.parse(localStorage.getItem(resumeKey));if(local?.format==='mce-v2'&&local.save?.hero===save.hero)save.resume=local.resume}catch{}
+let rankTicket=null,rankGeneration=0,rankStatus='',actionBusy=false;
+try{const local=JSON.parse(localStorage.getItem(resumeKey));if(local?.format==='mce-v2'&&local.save?.hero===save.hero){validateSnapshot(local);save.resume=local.resume}}catch{}
 function snapshot(){const clean={...save};delete clean.resume;return {format:'mce-v2',savedAt:new Date().toISOString(),save:clean,resume:level&&player&&['play','pause'].includes(mode)?{level:JSON.parse(JSON.stringify(level)),player:{...player,owned:[...player.owned]},difficulty,elapsed,stageCoins,stageDamage,checkpoint,t}:null}}
 function validateSnapshot(data){
  if(!data||data.format!=='mce-v2'||!data.save||JSON.stringify(data).length>524288)throw new Error('지원하지 않는 저장 데이터입니다.');
@@ -410,7 +410,8 @@ function validateSnapshot(data){
  }
  return data;
 }
-function rememberProgress(){if(!level||!player||player.hp<=0)return;const data=snapshot();if(!data.resume)return;save.resume=data.resume;persist();try{localStorage.setItem(resumeKey,JSON.stringify(data))}catch{}}
+function rememberProgress(){if(!level||!player||player.hp<=0)return false;const data=snapshot();if(!data.resume)return false;save.resume=data.resume;const ok=persist();try{localStorage.setItem(resumeKey,JSON.stringify(data));return ok}catch{return false}}
+function continueAdventure(){if(save.resume){try{restoreSnapshot(save.resume);return}catch{save.resume=null;persist();try{localStorage.removeItem(resumeKey)}catch{}}}loadStage(save.heroLocked?save.unlocked:1)}
 function restoreSnapshot(r){
  validateSnapshot({format:'mce-v2',save,resume:r});
  level=JSON.parse(JSON.stringify(r.level));player={...r.player,owned:[...r.player.owned],vx:0,vy:0,jumpHeld:false,inv:1.5};
@@ -422,46 +423,37 @@ setInterval(()=>{if(mode==='play')rememberProgress()},5000);
 window.addEventListener('pagehide',()=>{if(mode==='play'||mode==='pause')rememberProgress()});
 async function beginRankRun(){
  const generation=++rankGeneration;rankTicket=null;rankStatus='';
- try{const id=await MagicCloud.start(level.n,save.hero,difficulty);if(generation===rankGeneration){rankTicket=id;rankStatus=id?'온라인 기록 측정 중':'랭킹 참여는 시작 전에 로그인해주세요'}}catch(e){if(generation===rankGeneration)rankStatus=MagicCloud.message(e)}
+ try{const id=await MagicRanking.start(level.n,save.hero,difficulty);if(generation===rankGeneration){rankTicket=id;rankStatus=id?'온라인 기록 측정 중':'온라인 기록을 시작하지 못했습니다'}}catch(e){if(generation===rankGeneration)rankStatus=MagicRanking.message(e)}
 }
 function finishRankRun(){
  const id=rankTicket;rankTicket=null;rankGeneration++;
  if(!id)return null;
- const result={id,seconds:Math.max(0,Math.ceil(elapsed)),damage:stageDamage};
+ const result={id,seconds:Math.max(0,Math.floor(elapsed)),damage:stageDamage};
  try{localStorage.setItem(pendingRankKey,JSON.stringify(result))}catch{}
  return result;
 }
 function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function panelNote(text){const p=document.createElement('p');p.className='cloud-status';p.textContent=text;ui.options.append(p)}
-async function cloudAction(fn){if(cloudBusy)return;cloudBusy=true;ui.actions.querySelectorAll('button').forEach(b=>b.disabled=true);try{await fn()}catch(e){panelNote(MagicCloud.message(e))}finally{cloudBusy=false;ui.actions.querySelectorAll('button').forEach(b=>b.disabled=false)}}
-async function cloudMenu(){
+async function rankingAction(fn){if(actionBusy)return;actionBusy=true;ui.actions.querySelectorAll('button').forEach(b=>b.disabled=true);try{await fn()}catch(e){panelNote(MagicRanking.message(e))}finally{actionBusy=false;ui.actions.querySelectorAll('button').forEach(b=>b.disabled=false)}}
+function localSaveMenu(){
  const paused=mode==='pause';if(paused)rememberProgress();
- show('☁ 클라우드 저장','원할 때 직접 저장하고, 다른 기기에서 이어하세요.');
- if(paused)button('▶ 게임으로 돌아가기',resume,true);else button('◀ 처음으로',startMenu,true);
- try{
- const u=await MagicCloud.sessionUser();if(ui.title.textContent!=='☁ 클라우드 저장')return;
- if(!u){panelNote('로그인할 때 게임 화면이 새로 열립니다. 중간 진행은 이 기기에 보관됩니다.');button('구글로 로그인',()=>cloudAction(()=>MagicCloud.login()));return}
- panelNote('로그인됨 · 공개 랭킹에는 별명만 표시됩니다.');
- let row;try{row=await MagicCloud.read();if(ui.title.textContent!=='☁ 클라우드 저장')return;panelNote(row?'마지막 클라우드 저장: '+new Date(row.updated_at).toLocaleString('ko-KR')+' · 스테이지 '+(row.payload.resume?.level.n||row.payload.save.unlocked):'아직 클라우드에 저장한 기록이 없습니다.')}catch(e){panelNote(MagicCloud.message(e));return}
- button('☁ 지금 진행 상황 저장',()=>cloudAction(async()=>{
+ show('💾 이 기기 저장','진행 상황은 이 브라우저에 자동 저장됩니다.<br>로그인 없이 이어할 수 있습니다.');
+ function saveHere(){
   const data=snapshot();if(!data.resume&&save.resume)data.resume=save.resume;
-  const progress=data.resume?.level.n||save.unlocked;
-  if(row&&!confirm('클라우드 기록을 현재 스테이지 '+progress+' 기록으로 바꿀까요? 마지막 저장: '+new Date(row.updated_at).toLocaleString('ko-KR')))return;
-  await MagicCloud.write(data,row?.version||0);panelNote('✓ 클라우드 저장이 완료되었습니다.');row=await MagicCloud.read();
- }));
- const load=button('☁ 클라우드 불러오기',()=>cloudAction(async()=>{
-  const fresh=await MagicCloud.read();if(!fresh)throw new Error('저장된 클라우드 기록이 없습니다.');
-  const data=validateSnapshot(fresh.payload);
-  if(!confirm('클라우드 스테이지 '+(data.resume?.level.n||data.save.unlocked)+' 기록을 불러올까요? 현재 기기의 진행 기록이 바뀝니다.'))return;
-  save={...data.save,schemaVersion:2,resume:data.resume};persist();
-  if(data.resume){localStorage.setItem(resumeKey,JSON.stringify(data));restoreSnapshot(data.resume)}else{localStorage.removeItem(resumeKey);level=null;player=null;startMenu()}
- }));load.disabled=!row;
- button('로그아웃',()=>cloudAction(async()=>{await MagicCloud.logout();rankGeneration++;rankTicket=null;await cloudMenu()}),true);
- }catch(e){panelNote(MagicCloud.message(e))}
+  if(!persist())throw new Error('저장 공간을 사용할 수 없습니다. 브라우저 저장 설정을 확인해주세요.');
+  localStorage.setItem(resumeKey,JSON.stringify(data));
+  panelNote('✓ 이 기기에 저장했습니다. '+new Date(data.savedAt).toLocaleString('ko-KR'));
+ }
+ try{saveHere()}catch(e){panelNote(e.message)}
+ panelNote('브라우저 데이터를 삭제하거나 다른 기기를 사용하면 이 기록을 이어갈 수 없습니다.');
+ if(paused)button('▶ 게임으로 돌아가기',resume);
+ else if(save.resume)button('▶ 저장한 모험 이어하기',()=>restoreSnapshot(save.resume));
+ button('💾 지금 다시 저장',()=>{try{saveHere()}catch(e){panelNote(e.message)}},true);
+ button('◀ 처음으로',startMenu,true);
 }
 async function submitRanking(result){
  const nickname=localStorage.getItem(storeKey+'-nickname');if(!nickname)return;
- try{await MagicCloud.finish(result,nickname);const pending=JSON.parse(localStorage.getItem(pendingRankKey)||'null');if(pending?.id===result.id)localStorage.removeItem(pendingRankKey);if(ui.title.textContent.includes('클리어')||ui.title.textContent.includes('구했어요'))panelNote('✓ 온라인 랭킹에 기록을 등록했습니다.')}catch(e){if(ui.title.textContent.includes('클리어'))panelNote('랭킹 등록 대기: '+MagicCloud.message(e))}
+ try{await MagicRanking.finish(result,nickname);const pending=JSON.parse(localStorage.getItem(pendingRankKey)||'null');if(pending?.id===result.id)localStorage.removeItem(pendingRankKey);if(ui.title.textContent.includes('클리어')||ui.title.textContent.includes('구했어요'))panelNote('✓ 온라인 랭킹에 기록을 등록했습니다.')}catch(e){if(ui.title.textContent.includes('클리어'))panelNote('랭킹 등록 대기: '+MagicRanking.message(e))}
 }
 async function rankingMenu(){
  show('🌐 온라인 랭킹','직업·난이도별 순위 · 완료 단계 수 → 별 → 합산 시간<br><small>각 스테이지의 최고 기록을 합산합니다.</small>');
@@ -470,11 +462,11 @@ async function rankingMenu(){
  for(const [value,label] of [['easy','쉬움'],['normal','보통'],['hard','어려움']])d.add(new Option(label,value));heroes.forEach((hero,i)=>h.add(new Option(hero.name,String(i))));d.value=difficulty;h.value=String(save.hero);filters.append(d,h);ui.options.append(filters);
  const table=document.createElement('table');table.className='ranking-table';ui.options.append(table);
  let request=0;
- async function refresh(){const n=++request;table.textContent='불러오는 중…';try{const rows=await MagicCloud.board(d.value,Number(h.value));if(n!==request||!table.isConnected)return;table.textContent='';const head=table.createTHead().insertRow();['순위','별명','완료','별','시간'].forEach(v=>{const th=document.createElement('th');th.textContent=v;head.append(th)});const body=table.createTBody();if(!rows.length){const td=body.insertRow().insertCell();td.colSpan=5;td.textContent='아직 기록이 없습니다. 첫 기록에 도전하세요!'}rows.forEach((r,i)=>{const tr=body.insertRow();[i+1,r.nickname,r.cleared,r.stars,r.seconds+'초'].forEach(v=>tr.insertCell().textContent=String(v))})}catch(e){if(n===request)table.textContent=MagicCloud.message(e)}}
+ async function refresh(){const n=++request;table.textContent='불러오는 중…';try{const rows=await MagicRanking.board(d.value,Number(h.value));if(n!==request||!table.isConnected)return;table.textContent='';const head=table.createTHead().insertRow();['순위','별명','완료','별','시간'].forEach(v=>{const th=document.createElement('th');th.textContent=v;head.append(th)});const body=table.createTBody();if(!rows.length){const td=body.insertRow().insertCell();td.colSpan=5;td.textContent='아직 기록이 없습니다. 첫 기록에 도전하세요!'}rows.forEach((r,i)=>{const tr=body.insertRow();[i+1,r.nickname,r.cleared,r.stars,r.seconds+'초'].forEach(v=>tr.insertCell().textContent=String(v))})}catch(e){if(n===request)table.textContent=MagicRanking.message(e)}}
  d.onchange=refresh;h.onchange=refresh;
  const input=document.createElement('input');input.className='cloud-nickname';input.placeholder='랭킹 별명 (2~16자)';input.setAttribute('aria-label','랭킹 별명');input.maxLength=16;input.value=localStorage.getItem(storeKey+'-nickname')||'';ui.options.append(input);
- button('별명 저장 / 대기 기록 등록',()=>cloudAction(async()=>{const name=input.value.trim();if(name.length<2||name.length>16||/[<>\u0000-\u001f]/.test(name))throw new Error('별명은 2~16자로 입력해주세요.');localStorage.setItem(storeKey+'-nickname',name);const result=JSON.parse(localStorage.getItem(pendingRankKey)||'null');if(result){await MagicCloud.finish(result,name);localStorage.removeItem(pendingRankKey);panelNote('✓ 기록 등록 완료')}else panelNote('별명을 저장했습니다. 로그인 후 시작한 스테이지를 완료하면 자동 등록됩니다.');await refresh()}));
- button('☁ 로그인 / 클라우드',cloudMenu,true);button('◀ 처음으로',startMenu,true);await refresh();
+ button('별명 저장 / 대기 기록 등록',()=>rankingAction(async()=>{const name=input.value.trim();if(name.length<2||name.length>16||/[<>\u0000-\u001f]/.test(name))throw new Error('별명은 2~16자로 입력해주세요.');localStorage.setItem(storeKey+'-nickname',name);const result=JSON.parse(localStorage.getItem(pendingRankKey)||'null');if(result){await MagicRanking.finish(result,name);localStorage.removeItem(pendingRankKey);panelNote('✓ 기록 등록 완료')}else panelNote('별명을 저장했습니다. 별명을 정한 뒤 스테이지를 완료하면 로그인 없이 자동 등록됩니다.');await refresh()}));
+ button('◀ 처음으로',startMenu,true);await refresh();
 }
 // Each stage has a discoverable side chamber, with a safe return portal.
 const adventureMakeLevel=makeLevel;
