@@ -111,3 +111,10 @@ body{font-family:Trebuchet MS,Segoe UI,Malgun Gothic,sans-serif;background:#0b14
 @media(pointer:coarse){#keyboard-guide{display:none!important}}
 @media(max-width:700px){#stageProgress{flex-basis:95px;padding:4px 6px}#hud #hp{max-width:39%}#hud #stageName{max-width:18%}#hud #coins{max-width:21%}}
 @media(max-height:410px) and (pointer:fine){#keyboard-guide{bottom:7px;padding:6px 12px}}
+
+/* Two distinct classes and compact cloud/ranking panels. */
+.hero-chooser{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.cloud-status{font-size:13px;line-height:1.7;color:#dce9ff}
+.cloud-nickname{width:min(260px,85%);padding:12px;border-radius:8px;border:1px solid #9bb9d8;background:#14243b;color:#fff;font-size:16px}
+.ranking-table{width:100%;border-collapse:collapse;font-size:13px;color:#f4eddd}.ranking-table th,.ranking-table td{padding:9px 5px;border-bottom:1px solid #ffffff25;text-align:center}
+#options:has(.ranking-table){display:block;max-height:38vh;overflow:auto;width:100%}
